@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.igov.util.JSON.JsonRestUtils;
 
+import com.pb.ksv.msgcore.data.MAttrs;
+import com.pb.ksv.msgcore.data.MsgAttr;
 import com.pb.ksv.msgcore.user.Msg;
 
 public class MessageImpl implements Message {
@@ -16,9 +18,11 @@ public class MessageImpl implements Message {
     private String sKey = null;
     private Long nID_Subject = null;
     private Long nID_Server = null;
+
     private String smData = null;
     private List<String> asParam = null;
     private String sDate = null;
+
     private String smDataMisc = null;
 
     public MessageImpl(String sType, String sFunction) {
@@ -58,7 +62,7 @@ public class MessageImpl implements Message {
 	String sResponseMessage = null;
 	String sResponseCode = null;
 	String soResponseData = null;
-	StringBuffer smDataMisc = new StringBuffer(); 
+	StringBuffer smDataMisc = new StringBuffer();
 	if (smData != null) {
 	    asParam = new LinkedList<String>();
 
@@ -97,13 +101,37 @@ public class MessageImpl implements Message {
 
     @Override
     public String save() {
-	Throwable error = null;
 	String clientIP = null;
-	String attrs = null;
 	String id = null;
-	String msg = Msg.store(id, clientIP, error, attrs);
+
+	MAttrs mAttrs = new MAttrs();
+
+	addAttr(mAttrs, "sHead", sHead);
+	addAttr(mAttrs, "sBody", sBody);
+//	addAttr(mAttrs, "sError", sError);
+	addAttr(mAttrs, "sKey", sKey);
+	addAttr(mAttrs, "nID_Subject", nID_Subject);
+	addAttr(mAttrs, "nID_Server", nID_Server);
+	addAttr(mAttrs, "smData", smData);
+	addAttr(mAttrs, "sDate", sDate);
+
+	if (asParam != null) {
+	    StringBuffer asParamSb = new StringBuffer();
+	    for (String param : asParam) {
+		asParamSb.append(param);
+	    }
+	    addAttr(mAttrs, "asParam", asParamSb.toString());
+	}
+
+	addAttr(mAttrs, "smDataMisc", smDataMisc);
 	
-	return msg;
+	return Msg.store(id, clientIP, sError, mAttrs);
+    }
+
+    private void addAttr(MAttrs mAttrs, String title, Object o) {
+	if (o != null) {
+	    mAttrs.add(title, o.toString());
+	}
     }
 
 }
